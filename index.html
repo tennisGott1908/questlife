@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QuestLife">
+<title>QuestLife</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#c9a84c;--gold-dark:#8a6f2e;
+  --purple:#534AB7;--purple-light:#7f77dd;--purple-dark:#26215C;
+  --bg:#0d0d1a;--bg2:#13132a;--bg3:#1a1a35;
+  --text:#f0eefc;--text2:#a09ac8;--text3:#6a6490;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --green:#1D9E75;--red:#E24B4A;--amber:#EF9F27;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}
+.app{max-width:420px;margin:0 auto;min-height:100vh;position:relative}
+.screen{display:none;padding-bottom:80px}
+.screen.active{display:block}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:white;opacity:0.3}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:rgba(13,13,26,0.97);border-top:0.5px solid var(--border2);display:flex;z-index:100}
+.ni{flex:1;padding:10px 0 12px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;font-size:10px;color:var(--text3);border:none;background:none;font-family:'Inter',sans-serif}
+.ni.active{color:var(--gold)}
+.nicon{font-size:22px;line-height:1}
+.topbar{padding:16px 16px 0;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+.page-title{font-family:'Cinzel',serif;font-size:20px;color:var(--gold);letter-spacing:0.05em}
+.streak-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(239,159,39,0.15);border:0.5px solid rgba(239,159,39,0.4);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--amber)}
+.hero-card{margin:12px 16px 0;background:var(--bg2);border:0.5px solid var(--border2);border-radius:16px;padding:14px;position:relative;z-index:1}
+.hero-row{display:flex;gap:14px;align-items:center}
+.av-wrap{position:relative;flex-shrink:0}
+.av-circle{width:56px;height:56px;border-radius:50%;border:2px solid var(--gold);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
+.lvl-badge{position:absolute;bottom:-3px;right:-3px;background:var(--gold);color:#0d0d1a;font-size:9px;font-weight:700;border-radius:10px;padding:2px 5px}
+.hero-info{flex:1}
+.hero-name{font-family:'Cinzel',serif;font-size:14px;color:var(--text)}
+.hero-title{font-size:11px;color:var(--purple-light);margin:2px 0 6px}
+.xpbg{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
+.xpfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--gold));transition:width .6s}
+.xptxt{font-size:10px;color:var(--text3);margin-top:3px}
+.stats{display:flex;gap:8px;padding:10px 16px 0;position:relative;z-index:1}
+.scard{flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:8px;text-align:center}
+.snum{font-size:18px;font-weight:600;color:var(--gold)}
+.slbl{font-size:10px;color:var(--text3);margin-top:1px}
+.sec-title{font-family:'Cinzel',serif;font-size:11px;color:var(--gold-dark);padding:14px 16px 6px;letter-spacing:0.1em;text-transform:uppercase;position:relative;z-index:1}
+.qlist{padding:0 16px;display:flex;flex-direction:column;gap:7px;position:relative;z-index:1}
+.qcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:12px 13px;cursor:pointer;display:flex;align-items:center;gap:11px}
+.qcard.done{opacity:0.4}
+.qcard.done .qcheck{background:var(--purple);border-color:var(--purple)}
+.qcheck{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.qbody{flex:1;min-width:0}
+.qname{font-size:13px;font-weight:500;color:var(--text)}
+.qmeta{font-size:11px;color:var(--text3);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.qxp{font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0}
+.cdot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dbadge{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:500}
+.d-easy{background:rgba(29,158,117,0.2);color:#5de8b8}
+.d-mid{background:rgba(239,159,39,0.2);color:#f5c060}
+.d-hard{background:rgba(226,75,74,0.2);color:#f07878}
+.ai-badge{font-size:10px;padding:2px 6px;border-radius:8px;background:rgba(83,74,183,0.25);color:var(--purple-light)}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--purple-dark);border:0.5px solid var(--purple-light);color:var(--text);padding:10px 18px;border-radius:12px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.lvlup{position:fixed;inset:0;background:rgba(13,13,26,0.97);display:none;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:14px;text-align:center;padding:32px}
+.lvlup.show{display:flex}
+.lvlup-icon{font-size:72px}
+.lvlup h2{font-family:'Cinzel',serif;font-size:26px;color:var(--gold)}
+.lvlup p{font-size:15px;color:var(--text2)}
+.lvlup button{margin-top:8px;background:var(--gold);color:#0d0d1a;border:none;border-radius:10px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Cinzel',serif}
+.form-wrap{padding:12px 16px;position:relative;z-index:1}
+.fbox{background:var(--bg2);border:0.5px solid var(--border2);border-radius:14px;padding:14px;margin-bottom:14px}
+.fbox-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:10px}
+.field{margin-bottom:10px}
+.field label{font-size:11px;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em}
+.field input,.field select{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;-webkit-appearance:none}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:var(--text);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:0.05em;margin-top:4px}
+.btn-danger{background:none;border:0.5px solid var(--red);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--red);cursor:pointer}
+.av-screen{padding:16px;position:relative;z-index:1}
+.av-big{width:100%;height:280px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:100px;margin-bottom:12px}
+.av-info{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:12px}
+.reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px;position:relative;z-index:1}
+.rcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:12px;text-align:center;cursor:pointer}
+.rcard.locked{opacity:0.35;cursor:default}
+.rcard.owned{border-color:var(--green)}
+.ricon{font-size:30px;margin-bottom:6px}
+.rname{font-size:12px;font-weight:500;color:var(--text)}
+.rcost{font-size:11px;color:var(--gold);margin-top:2px}
+.runlocked{font-size:10px;color:#5de8b8;margin-top:2px}
+.ach-list{padding:0 16px;display:flex;flex-direction:column;gap:7px;margin-top:12px;position:relative;z-index:1}
+.acard{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:12px 13px;display:flex;gap:12px;align-items:center}
+.acard.locked{opacity:0.3}
+.aicon{font-size:26px;flex-shrink:0}
+.aname{font-size:13px;font-weight:500;color:var(--text)}
+.adesc{font-size:11px;color:var(--text3);margin-top:2px}
+.aunlocked{font-size:10px;color:#5de8b8;margin-top:2px;font-weight:500}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="app">
+
+<div class="screen active" id="sc-today">
+  <div class="topbar">
+    <div class="page-title">QuestLife</div>
+    <span class="streak-pill" id="streakPill">&#x1F525; 0 Tage</span>
+  </div>
+  <div class="hero-card">
+    <div class="hero-row">
+      <div class="av-wrap">
+        <div class="av-circle" id="avCircle" onclick="nav('avatar',1)">&#x1F9D9;</div>
+        <div class="lvl-badge" id="lvlBadge">Lv1</div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-name">Held Umdasch</div>
+        <div class="hero-title" id="heroTitle">Frischer Abenteurer</div>
+        <div class="xpbg"><div class="xpfill" id="xpFill" style="width:0%"></div></div>
+        <div class="xptxt" id="xpTxt">0 / 500 XP</div>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="scard"><div class="snum" id="sDone">0</div><div class="slbl">erledigt</div></div>
+    <div class="scard"><div class="snum" id="sTotal">0</div><div class="slbl">quests</div></div>
+    <div class="scard"><div class="snum" id="sXPT">0</div><div class="slbl">XP heute</div></div>
+    <div class="scard"><div class="snum" id="sXPA">0</div><div class="slbl">XP gesamt</div></div>
+  </div>
+  <div class="sec-title">&#x2694;&#xFE0F; Meine Quests</div>
+  <div class="qlist" id="myQL"></div>
+  <div class="sec-title">&#x2728; KI-Quests des Tages</div>
+  <div class="qlist" id="aiQL"></div>
+  <div class="sec-title" id="wkTitle" style="display:none">&#x1F31F; Wochen-Quest</div>
+  <div class="qlist" id="wkQL"></div>
+</div>
+
+<div class="screen" id="sc-avatar">
+  <div class="topbar"><div class="page-title">Mein Held</div></div>
+  <div class="av-screen">
+    <div class="av-big" id="avBig">&#x1F9D9;</div>
+    <div class="av-info">
+      <div style="font-family:Cinzel,serif;font-size:13px;color:var(--gold);margin-bottom:4px" id="avTitle">Frischer Abenteurer</div>
+      <div style="font-size:12px;color:var(--text3)" id="avSub">0 XP gesamt</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="sc-quests">
+  <div class="topbar"><div class="page-title">Quests</div></div>
+  <div class="form-wrap">
+    <div class="fbox">
+      <div class="fbox-title">Neue Quest erstellen</div>
+      <div class="field"><label>Name</label><input type="text" id="qName" placeholder="z.B. 30 Min laufen"></div>
+      <div class="field"><label>Kategorie</label>
+        <select id="qCat">
+          <option value="fitness">&#x1F4AA; Fitness</option>
+          <option value="geist">&#x1F9D8; Geist</option>
+          <option value="wissen">&#x1F4DA; Wissen</option>
+          <option value="ernahrung">&#x1F957; Ernaehrung</option>
+          <option value="sozial">&#x1F465; Sozial</option>
+          <option value="kreativ">&#x1F3A8; Kreativ</option>
+          <option value="arbeit">&#x1F4BC; Arbeit</option>
+        </select>
+      </div>
+      <div class="field"><label>Schwierigkeit</label>
+        <select id="qDiff">
+          <option value="easy">Leicht (+30 XP)</option>
+          <option value="mid" selected>Mittel (+60 XP)</option>
+          <option value="hard">Schwer (+100 XP)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="addQuest()">+ Quest hinzufuegen</button>
+    </div>
+    <div style="font-family:Cinzel,serif;font-size:12px;color:var(--gold-dark);margin-bottom:8px;letter-spacing:0.05em;text-transform:uppercase">Meine Quests</div>
+    <div id="myQM" style="display:flex;flex-direction:column;gap:7px"></div>
+  </div>
+</div>
+
+<div class="screen" id="sc-rewards">
+  <div class="topbar"><div class="page-title">Belohnungen</div></div>
+  <div style="padding:10px 16px 0;font-size:13px;color:var(--text2);position:relative;z-index:1">Verfuegbare XP: <strong style="color:var(--gold)" id="xpAvail">0</strong></div>
+  <div class="sec-title">Charakter-Upgrades</div>
+  <div class="reward-grid" id="charR"></div>
+  <div class="sec-title">Eigene Belohnungen</div>
+  <div class="reward-grid" id="myR"></div>
+  <div class="form-wrap" style="margin-top:4px">
+    <div class="fbox">
+      <div class="fbox-title">Belohnung erstellen</div>
+      <div class="field"><label>Belohnung</label><input type="text" id="rName" placeholder="z.B. Kinoabend..."></div>
+      <div class="field"><label>Kosten (XP)</label><input type="number" id="rCost" placeholder="z.B. 500" min="50"></div>
+      <div class="field"><label>Icon (Emoji)</label><input type="text" id="rIcon" placeholder="&#x1F355;" maxlength="2"></div>
+      <button class="btn-primary" onclick="addReward()">+ Belohnung erstellen</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="sc-ach">
+  <div class="topbar"><div class="page-title">Erfolge</div></div>
+  <div class="ach-list" id="achList"></div>
+</div>
+
+</div>
+
+<div class="bnav">
+  <button class="ni active" id="ni0" onclick="nav('today',0)"><span class="nicon">&#x2694;&#xFE0F;</span>Heute</button>
+  <button class="ni" id="ni1" onclick="nav('avatar',1)"><span class="nicon">&#x1F9D9;</span>Held</button>
+  <button class="ni" id="ni2" onclick="nav('quests',2)"><span class="nicon">&#x270F;&#xFE0F;</span>Quests</button>
+  <button class="ni" id="ni3" onclick="nav('rewards',3)"><span class="nicon">&#x1F3C6;</span>Belohn.</button>
+  <button class="ni" id="ni4" onclick="nav('ach',4)"><span class="nicon">&#x1F396;&#xFE0F;</span>Erfolge</button>
+</div>
+
+<div class="lvlup" id="lvlup">
+  <div class="lvlup-icon" id="luIcon">&#x2694;&#xFE0F;</div>
+  <h2>Level Up!</h2>
+  <p id="luDesc">Du hast Level 2 erreicht!</p>
+  <button onclick="document.getElementById('lvlup').classList.remove('show')">Weiter</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var LVL = [
+  {n:"Frischer Abenteurer",i:"&#x1F9D9;",xp:0},
+  {n:"Mutiger Krieger",i:"&#x2694;&#xFE0F;",xp:500},
+  {n:"Erfahrener Jaeger",i:"&#x1F3F9;",xp:1200},
+  {n:"Weiser Magier",i:"&#x1F52E;",xp:2500},
+  {n:"Legendaerer Held",i:"&#x1F981;",xp:5000},
+  {n:"Unsterbliche Legende",i:"&#x1F451;",xp:10000}
+];
+var CC = {fitness:"#1D9E75",geist:"#534AB7",wissen:"#378ADD",ernahrung:"#D85A30",sozial:"#D4537E",kreativ:"#EF9F27",arbeit:"#888780"};
+var CI = {fitness:"&#x1F4AA;",geist:"&#x1F9D8;",wissen:"&#x1F4DA;",ernahrung:"&#x1F957;",sozial:"&#x1F465;",kreativ:"&#x1F3A8;",arbeit:"&#x1F4BC;"};
+var DX = {easy:30,mid:60,hard:100};
+var AIPOOL = [
+  {name:"Kalt duschen",cat:"geist",diff:"mid"},
+  {name:"Kein Handy 1h vor Schlaf",cat:"geist",diff:"easy"},
+  {name:"5 Min Dankbarkeits-Journal",cat:"geist",diff:"easy"},
+  {name:"Jemandem ein Kompliment machen",cat:"sozial",diff:"easy"},
+  {name:"Etwas Neues kochen",cat:"ernahrung",diff:"mid"},
+  {name:"10.000 Schritte gehen",cat:"fitness",diff:"mid"},
+  {name:"15 Min strecken",cat:"fitness",diff:"easy"},
+  {name:"Ein Kapitel lesen",cat:"wissen",diff:"mid"},
+  {name:"Podcast auf Englisch hoeren",cat:"wissen",diff:"easy"},
+  {name:"30 Min kein Social Media",cat:"geist",diff:"hard"},
+  {name:"Aufgeschobene Email schreiben",cat:"arbeit",diff:"mid"},
+  {name:"5 Min Atemubung",cat:"geist",diff:"easy"},
+  {name:"Vitamintablette nehmen",cat:"ernahrung",diff:"easy"},
+  {name:"Etwas aufraeumen",cat:"arbeit",diff:"easy"},
+  {name:"Sprint laufen",cat:"fitness",diff:"hard"}
+];
+var WPOOL = [
+  {name:"Diese Woche 5x Sport machen",cat:"fitness",diff:"hard",xp:400},
+  {name:"7 Tage taeglich meditieren",cat:"geist",diff:"hard",xp:500},
+  {name:"Ein Buch beenden",cat:"wissen",diff:"hard",xp:350},
+  {name:"Jeden Tag 2L Wasser trinken",cat:"ernahrung",diff:"mid",xp:300},
+  {name:"Taeglich Tagebuch schreiben",cat:"geist",diff:"mid",xp:280}
+];
+var CHAR_R = [
+  {id:"r1",i:"&#x1F5E1;&#xFE0F;",n:"Magisches Schwert",c:300},
+  {id:"r2",i:"&#x1F6E1;&#xFE0F;",n:"Drachenschuppe",c:500},
+  {id:"r3",i:"&#x1FA84;",n:"Zauberstab",c:800},
+  {id:"r4",i:"&#x1F451;",n:"Koenigskrone",c:1500},
+  {id:"r5",i:"&#x1F3E0;",n:"Stadthaus",c:2000},
+  {id:"r6",i:"&#x1F697;",n:"Sportwagen",c:3000},
+  {id:"r7",i:"&#x1F3DD;&#xFE0F;",n:"Privatinsel",c:5000},
+  {id:"r8",i:"&#x1F680;",n:"Privatjet",c:8000}
+];
+var ACH = [
+  {id:"a1",i:"&#x1F31F;",n:"Erster Schritt",d:"Erste Quest abgeschlossen"},
+  {id:"a2",i:"&#x1F525;",n:"In Flammen",d:"3-Tage Streak"},
+  {id:"a3",i:"&#x1F4AF;",n:"Perfekter Tag",d:"Alle Quests an einem Tag"},
+  {id:"a4",i:"&#x26A1;",n:"Blitzkrieger",d:"10 Quests insgesamt"},
+  {id:"a5",i:"&#x1F3C5;",n:"Ehrenwert",d:"50 Quests insgesamt"},
+  {id:"a6",i:"&#x1F94E;",n:"Ewige Flamme",d:"7-Tage Streak"},
+  {id:"a7",i:"&#x1F48E;",n:"Diamant",d:"Level 3 erreicht"},
+  {id:"a8",i:"&#x1F308;",n:"Alleskoenner",d:"Alle Kategorien benutzt"}
+];
+
+var S = {xp:0,lv:0,sk:0,ld:null,td:0,pd:0,cu:0,mq:[],dd:{},aid:null,aq:[],wd:null,wq:null,ur:[],mr:[],ac:[]};
+
+function sv() { try { localStorage.setItem('ql4', JSON.stringify(S)); } catch(e) {} }
+function ldS() { try { var d = localStorage.getItem('ql4'); if(d) S = JSON.parse(d); } catch(e) {} }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function weekStr() { var d = new Date(); var w = d.getDay() || 7; d.setDate(d.getDate()-w+1); return d.toISOString().slice(0,10); }
+function getLv(x) { var l = 0; for(var i=0;i<LVL.length;i++) { if(x >= LVL[i].xp) l = i; } return l; }
+
+function showToast(m) {
+  var t = document.getElementById('toast');
+  t.innerHTML = m;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2400);
+}
+
+function nav(name, idx) {
+  var screens = document.querySelectorAll('.screen');
+  for(var i=0; i<screens.length; i++) screens[i].classList.remove('active');
+  document.getElementById('sc-'+name).classList.add('active');
+  for(var j=0; j<5; j++) document.getElementById('ni'+j).classList.remove('active');
+  document.getElementById('ni'+idx).classList.add('active');
+  if(name === 'today') renderToday();
+  if(name === 'quests') renderManage();
+  if(name === 'rewards') renderRewards();
+  if(name === 'ach') renderAch();
+  if(name === 'avatar') renderAvatar();
+}
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for(var i = a.length-1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i+1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function setup() {
+  var t = todayStr(), w = weekStr();
+  if(S.aid !== t) {
+    S.aid = t;
+    var sh = shuffle(AIPOOL);
+    S.aq = [];
+    for(var i=0; i<2; i++) {
+      var q = sh[i];
+      S.aq.push({id:'ai'+i, name:q.name, cat:q.cat, diff:q.diff, xp:DX[q.diff], ai:true});
+    }
+    if(S.ld) {
+      var df = (new Date(t) - new Date(S.ld)) / 864e5;
+      if(df === 1) S.sk++;
+      else if(df > 1) S.sk = 1;
+    } else { S.sk = 1; }
+    S.ld = t; S.dd = {}; sv();
+  }
+  if(S.wd !== w) {
+    S.wd = w;
+    var wq = WPOOL[Math.floor(Math.random() * WPOOL.length)];
+    S.wq = {id:'wk', name:wq.name, cat:wq.cat, diff:wq.diff, xp:wq.xp, ai:true};
+    sv();
+  }
+}
+
+function renderHero() {
+  var lv = getLv(S.xp); S.lv = lv;
+  var cur = LVL[lv], nxt = LVL[lv+1];
+  var icon = S.ur.indexOf('r4')>=0?'&#x1F451;':S.ur.indexOf('r3')>=0?'&#x1FA84;':S.ur.indexOf('r2')>=0?'&#x1F6E1;&#xFE0F;':S.ur.indexOf('r1')>=0?'&#x1F5E1;&#xFE0F;':cur.i;
+  document.getElementById('avCircle').innerHTML = icon;
+  document.getElementById('lvlBadge').textContent = 'Lv'+(lv+1);
+  document.getElementById('heroTitle').textContent = cur.n;
+  document.getElementById('streakPill').innerHTML = '&#x1F525; '+S.sk+' Tage';
+  var xpIn = S.xp - (cur.xp||0);
+  var xpNeed = nxt ? (nxt.xp - (cur.xp||0)) : 99999;
+  var pct = Math.min(100, Math.round(xpIn/xpNeed*100));
+  document.getElementById('xpFill').style.width = pct+'%';
+  document.getElementById('xpTxt').textContent = xpIn+' / '+xpNeed+' XP bis Level '+(lv+2);
+}
+
+function renderAvatar() {
+  var lv = getLv(S.xp);
+  var cur = LVL[lv];
+  var icon = S.ur.indexOf('r4')>=0?'&#x1F451;':S.ur.indexOf('r3')>=0?'&#x1FA84;':S.ur.indexOf('r2')>=0?'&#x1F6E1;&#xFE0F;':S.ur.indexOf('r1')>=0?'&#x1F5E1;&#xFE0F;':cur.i;
+  document.getElementById('avBig').innerHTML = icon;
+  document.getElementById('avTitle').textContent = cur.n;
+  document.getElementById('avSub').textContent = S.xp+' XP gesamt · Level '+(lv+1);
+}
+
+function renderStats() {
+  var all = S.mq.concat(S.aq);
+  if(S.wq) all.push(S.wq);
+  var done = 0, xpt = 0;
+  for(var i=0; i<all.length; i++) {
+    if(S.dd[all[i].id]) { done++; xpt += all[i].xp||0; }
+  }
+  document.getElementById('sDone').textContent = done;
+  document.getElementById('sTotal').textContent = all.length;
+  document.getElementById('sXPT').textContent = xpt;
+  document.getElementById('sXPA').textContent = S.xp;
+}
+
+function qHTML(q) {
+  var done = S.dd[q.id];
+  var dc = {easy:'d-easy',mid:'d-mid',hard:'d-hard'};
+  var dl = {easy:'Leicht',mid:'Mittel',hard:'Schwer'};
+  return '<div class="qcard'+(done?' done':'')+'" onclick="tQ(\''+q.id+'\')">'+
+    '<div class="qcheck">'+(done?'&#x2713;':'')+'</div>'+
+    '<div class="qbody">'+
+      '<div class="qname">'+(CI[q.cat]||'&#x2B50;')+' '+q.name+'</div>'+
+      '<div class="qmeta"><span class="cdot" style="background:'+CC[q.cat]+'"></span>'+q.cat+
+      ' <span class="dbadge '+(dc[q.diff]||'d-easy')+'">'+dl[q.diff]+'</span>'+
+      (q.ai?' <span class="ai-badge">KI</span>':'')+'</div>'+
+    '</div>'+
+    '<div class="qxp">+'+q.xp+' XP</div></div>';
+}
+
+function renderToday() {
+  setup(); renderHero(); renderStats();
+  var myQl = document.getElementById('myQL');
+  if(S.mq.length) {
+    var h = '';
+    for(var i=0; i<S.mq.length; i++) h += qHTML(S.mq[i]);
+    myQl.innerHTML = h;
+  } else {
+    myQl.innerHTML = '<div style="padding:8px 0;font-size:13px;color:var(--text3)">Noch keine Quests — erstelle sie im Quests-Tab.</div>';
+  }
+  var aiQl = document.getElementById('aiQL');
+  var ah = '';
+  for(var j=0; j<S.aq.length; j++) ah += qHTML(S.aq[j]);
+  aiQl.innerHTML = ah;
+  var wt = document.getElementById('wkTitle'), wl = document.getElementById('wkQL');
+  if(S.wq) { wt.style.display=''; wl.innerHTML = qHTML(S.wq); }
+  else { wt.style.display='none'; wl.innerHTML=''; }
+}
+
+function tQ(id) {
+  var all = S.mq.concat(S.aq);
+  if(S.wq) all.push(S.wq);
+  var q = null;
+  for(var i=0; i<all.length; i++) { if(all[i].id === id) { q = all[i]; break; } }
+  if(!q) return;
+  if(S.dd[id]) {
+    delete S.dd[id]; S.xp = Math.max(0, S.xp - q.xp); S.td = Math.max(0, S.td-1);
+  } else {
+    S.dd[id] = true;
+    var ol = getLv(S.xp); S.xp += q.xp; S.td++;
+    var nl = getLv(S.xp);
+    var msgs = ['&#x2694;&#xFE0F; Quest erledigt! +'+q.xp+' XP','&#x1F525; Stark! +'+q.xp+' XP','&#x2728; Exzellent! +'+q.xp+' XP'];
+    showToast(msgs[Math.floor(Math.random()*3)]);
+    if(nl > ol) {
+      setTimeout(function() {
+        var lv = LVL[nl];
+        document.getElementById('luIcon').innerHTML = lv.i;
+        document.getElementById('luDesc').textContent = 'Du bist jetzt: '+lv.n+' (Level '+(nl+1)+')';
+        document.getElementById('lvlup').classList.add('show');
+      }, 600);
+    }
+    var allIds = [];
+    for(var k=0; k<all.length; k++) allIds.push(all[k].id);
+    var allDone = true;
+    for(var m=0; m<allIds.length; m++) { if(!S.dd[allIds[m]]) { allDone=false; break; } }
+    if(allDone) S.pd++;
+    var cats = {};
+    for(var n=0; n<S.mq.length; n++) cats[S.mq[n].cat] = 1;
+    for(var o=0; o<S.aq.length; o++) cats[S.aq[o].cat] = 1;
+    S.cu = Object.keys(cats).length;
+  }
+  chkAch(); sv(); renderToday();
+}
+
+function chkAch() {
+  var checks = [
+    function(s){return s.td>=1;},
+    function(s){return s.sk>=3;},
+    function(s){return s.pd>=1;},
+    function(s){return s.td>=10;},
+    function(s){return s.td>=50;},
+    function(s){return s.sk>=7;},
+    function(s){return s.lv>=3;},
+    function(s){return s.cu>=7;}
+  ];
+  for(var i=0; i<ACH.length; i++) {
+    if(S.ac.indexOf(ACH[i].id) < 0 && checks[i](S)) {
+      S.ac.push(ACH[i].id);
+      (function(name){ setTimeout(function(){ showToast('&#x1F396;&#xFE0F; Erfolg: '+name); }, 1000); })(ACH[i].n);
+    }
+  }
+}
+
+function addQuest() {
+  var n = document.getElementById('qName').value.trim();
+  if(!n) { showToast('&#x2757; Bitte Namen eingeben'); return; }
+  var cat = document.getElementById('qCat').value;
+  var diff = document.getElementById('qDiff').value;
+  S.mq.push({id:'m'+Date.now(), name:n, cat:cat, diff:diff, xp:DX[diff], ai:false});
+  document.getElementById('qName').value = '';
+  sv(); renderManage(); showToast('&#x2705; Quest hinzugefuegt!');
+}
+
+function delQ(id) {
+  var newQ = [];
+  for(var i=0; i<S.mq.length; i++) { if(S.mq[i].id !== id) newQ.push(S.mq[i]); }
+  S.mq = newQ; sv(); renderManage();
+}
+
+function renderManage() {
+  var el = document.getElementById('myQM');
+  if(!S.mq.length) { el.innerHTML='<div style="font-size:13px;color:var(--text3)">Noch keine Quests.</div>'; return; }
+  var h = '';
+  for(var i=0; i<S.mq.length; i++) {
+    var q = S.mq[i];
+    h += '<div class="qcard" style="cursor:default"><div class="qbody"><div class="qname">'+(CI[q.cat]||'&#x2B50;')+' '+q.name+'</div><div class="qmeta"><span class="cdot" style="background:'+CC[q.cat]+'"></span>'+q.cat+' +'+q.xp+' XP</div></div><button class="btn-danger" onclick="delQ(\''+q.id+'\')">&#x2715;</button></div>';
+  }
+  el.innerHTML = h;
+}
+
+function renderRewards() {
+  document.getElementById('xpAvail').textContent = S.xp;
+  var ch = '';
+  for(var i=0; i<CHAR_R.length; i++) {
+    var r = CHAR_R[i];
+    var owned = S.ur.indexOf(r.id) >= 0;
+    var canBuy = S.xp >= r.c && !owned;
+    ch += '<div class="rcard'+(owned?' owned':canBuy?'':' locked')+'" '+(canBuy?'onclick="buyR(\''+r.id+\'\')"':'')+' style="'+(canBuy?'cursor:pointer':'')+'"><div class="ricon">'+r.i+'</div><div class="rname">'+r.n+'</div>'+(owned?'<div class="runlocked">&#x2713; Besitz</div>':'<div class="rcost">'+r.c+' XP</div>')+'</div>';
+  }
+  document.getElementById('charR').innerHTML = ch;
+  var mr = '';
+  if(S.mr.length) {
+    for(var j=0; j<S.mr.length; j++) {
+      var rm = S.mr[j];
+      var cb = S.xp >= rm.c;
+      mr += '<div class="rcard'+(cb?'':' locked')+'" '+(cb?'onclick="useR('+j+')"':'')+' style="'+(cb?'cursor:pointer':'')+'"><div class="ricon">'+(rm.i||'&#x1F381;')+'</div><div class="rname">'+rm.n+'</div><div class="rcost">'+rm.c+' XP</div></div>';
+    }
+  } else {
+    mr = '<div style="grid-column:1/-1;font-size:13px;color:var(--text3);padding:4px 0">Noch keine eigenen Belohnungen.</div>';
+  }
+  document.getElementById('myR').innerHTML = mr;
+}
+
+function buyR(id) {
+  var r = null;
+  for(var i=0; i<CHAR_R.length; i++) { if(CHAR_R[i].id === id) { r = CHAR_R[i]; break; } }
+  if(!r || S.xp < r.c || S.ur.indexOf(id) >= 0) return;
+  S.xp -= r.c; S.ur.push(id); sv(); renderRewards(); renderHero();
+  showToast('&#x1F389; '+r.n+' freigeschaltet!');
+}
+
+function useR(i) {
+  var r = S.mr[i];
+  if(!r || S.xp < r.c) return;
+  S.xp -= r.c; sv(); renderRewards(); renderHero();
+  showToast('&#x1F389; '+r.n+' eingeloest!');
+}
+
+function addReward() {
+  var n = document.getElementById('rName').value.trim();
+  var c = parseInt(document.getElementById('rCost').value) || 0;
+  var ic = document.getElementById('rIcon').value || '&#x1F381;';
+  if(!n) { showToast('&#x2757; Bitte Namen eingeben'); return; }
+  if(c < 50) { showToast('&#x2757; Mindestens 50 XP'); return; }
+  S.mr.push({n:n, c:c, i:ic});
+  document.getElementById('rName').value = '';
+  document.getElementById('rCost').value = '';
+  document.getElementById('rIcon').value = '';
+  sv(); renderRewards(); showToast('&#x2705; Belohnung erstellt!');
+}
+
+function renderAch() {
+  var h = '';
+  for(var i=0; i<ACH.length; i++) {
+    var a = ACH[i];
+    var u = S.ac.indexOf(a.id) >= 0;
+    h += '<div class="acard'+(u?'':' locked')+'"><div class="aicon">'+a.i+'</div><div><div class="aname">'+a.n+'</div><div class="adesc">'+a.d+'</div>'+(u?'<div class="aunlocked">&#x2713; Freigeschaltet</div>':'')+'</div></div>';
+  }
+  document.getElementById('achList').innerHTML = h;
+}
+
+// Stars
+var se = document.getElementById('stars');
+for(var si=0; si<50; si++) {
+  var st = document.createElement('div');
+  st.className = 'star';
+  var sz = Math.random()*2+1;
+  st.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;';
+  se.appendChild(st);
+}
+
+ldS();
+renderToday();
+</script>
+</body>
+</html>
